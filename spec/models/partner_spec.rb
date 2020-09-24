@@ -5,6 +5,8 @@
 #  id              :integer          not null, primary key
 #  email           :string
 #  name            :string
+#  notes           :text
+#  quota           :integer
 #  send_reminders  :boolean          default(FALSE), not null
 #  status          :integer          default("uninvited")
 #  created_at      :datetime         not null
@@ -39,6 +41,11 @@ RSpec.describe Partner, type: :model do
       create(:partner, email: "foo@bar.com")
       expect(build(:partner, email: "foo@bar.com")).not_to be_valid
       expect(build(:partner, email: "boooooooooo")).not_to be_valid
+    end
+
+    it "validates the quota is a number but it is not required" do
+      is_expected.to validate_numericality_of(:quota)
+      expect(build(:partner, email: "foo@bar.com", quota: "")).to be_valid
     end
   end
 
@@ -157,6 +164,18 @@ RSpec.describe Partner, type: :model do
     it "does not include quantities from last year" do
       LineItem.last.update(created_at: Time.zone.today.beginning_of_year - 20)
       expect(partner.quantity_year_to_date).to eq(200)
+    end
+  end
+
+  describe "ActiveStorage validation" do
+    it "validates that attachments are pdf or docs" do
+      partner = build(:partner, documents: [Rack::Test::UploadedFile.new(Rails.root.join("spec/fixtures/logo.jpg"), "image/jpeg")])
+
+      expect(partner).to_not be_valid
+
+      partner = build(:partner, documents: [Rack::Test::UploadedFile.new(Rails.root.join("spec/fixtures/dbase.pdf"), "application/pdf")])
+
+      expect(partner).to be_valid
     end
   end
 end

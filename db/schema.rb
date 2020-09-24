@@ -292,6 +292,8 @@ ActiveRecord::Schema.define(version: 2020_09_24_182034) do
     t.integer "organization_id"
     t.integer "status", default: 0
     t.boolean "send_reminders", default: false, null: false
+    t.text "notes"
+    t.integer "quota"
     t.index ["organization_id"], name: "index_partners_on_organization_id"
   end
 
